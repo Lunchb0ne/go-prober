@@ -1,8 +1,143 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+
+output:
+  formats:
+    - format: colored-line-number
+      path: stdout
+  print-issued-lines: true
+  print-linter-name: true
+  sort-results: true
+
 linters:
   enable:
-    - thelper
+    # Error detection
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - typecheck
+    
+    # Code formatting
     - gofumpt
-    - tparallel
+    - gci
+    - goimports
+    
+    # Code quality
+    - dupl
+    - gocyclo
+    - gocognit
+    - goconst
+    - gocritic
+    - revive
+    - stylecheck
+    
+    # Security
+    - gosec
+    
+    # Performance
+    - prealloc
     - unconvert
     - unparam
     - wastedassign
+    
+    # Testing
+    - thelper
+    - tparallel
+    - testpackage
+    - usetesting  # replaces deprecated tenv
+    
+    # Bugs prevention
+    - bodyclose
+    - contextcheck
+    - copyloopvar
+    - errorlint
+    - exhaustive
+    - nilerr
+    - nilnil
+    
+    # Best practices
+    - forbidigo
+    - godot
+    - misspell
+    - noctx
+    - nolintlint
+    - whitespace
+
+linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/charmbracelet)
+    skip-generated: true
+    
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - hugeParam  # Bubble Tea models are intentionally passed by value
+    
+  gocyclo:
+    min-complexity: 15
+    
+  gocognit:
+    min-complexity: 15
+    
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+    
+  gosec:
+    excludes:
+      - G107  # Potential HTTP request made with variable url
+      
+  misspell:
+    locale: US
+    
+  revive:
+    rules:
+      - name: exported
+        arguments: ["checkPrivateReceivers", "sayRepetitiveInsteadOfStutters"]
+      - name: package-comments
+      - name: var-naming
+      - name: range-val-in-closure
+      - name: if-return
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: superfluous-else
+      
+  whitespace:
+    multi-if: false
+    multi-func: false
+
+issues:
+  exclude-use-default: false
+  uniq-by-line: true
+  exclude-rules:
+    # Exclude some linters from running on tests files
+    - path: _test\.go
+      linters:
+        - gosec
+        - dupl
+        - gocyclo
+        - gocognit
+    
+    # Exclude main.go from some style checks since it's a simple template
+    - path: main\.go
+      linters:
+        - gochecknoglobals
+        - forbidigo
+        - revive  # Skip package comments for main package
+
+severity:
+  default-severity: error
+  case-sensitive: false
